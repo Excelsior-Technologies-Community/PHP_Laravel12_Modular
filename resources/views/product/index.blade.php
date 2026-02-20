@@ -114,6 +114,11 @@
 
     <div class="container">
 
+        <div class="header">
+            <h1>Product List</h1>
+
+        </div>
+
         <div class="nav">
             <a href="/users">Users</a> |
             <a href="/products">Products</a> |
