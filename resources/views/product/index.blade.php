@@ -27,11 +27,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            color: #333;
         }
 
         .add-btn {
@@ -40,16 +35,12 @@
             padding: 8px 15px;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .add-btn:hover {
-            background: #0b7d73;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
         }
 
         table thead {
@@ -57,15 +48,9 @@
             color: white;
         }
 
-        table th,
-        table td {
+        table th, table td {
             padding: 12px;
             text-align: left;
-        }
-
-        table tbody tr {
-            border-bottom: 1px solid #ddd;
-            transition: 0.3s;
         }
 
         table tbody tr:hover {
@@ -85,26 +70,18 @@
             font-size: 12px;
         }
 
-        .footer {
+        .search-box input {
+            width: 100%;
+            padding: 10px;
             margin-top: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .no-data {
             text-align: center;
-            color: #777;
-            font-size: 13px;
-        }
-
-        .nav {
-            margin-bottom: 15px;
-        }
-
-        .nav a {
-            text-decoration: none;
-            margin-right: 10px;
-            color: #11998e;
-            font-weight: bold;
-        }
-
-        .nav a:hover {
-            text-decoration: underline;
+            color: red;
+            padding: 20px;
         }
     </style>
 
@@ -112,51 +89,100 @@
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <div class="header">
-            <h1>Product List</h1>
+    <div class="header">
+        <h1>Product List</h1>
+        <a href="/products/create" class="add-btn">+ Add Product</a>
+    </div>
 
-        </div>
+    <div class="search-box">
+        <input type="text" id="search" placeholder="Search product by name or price...">
+    </div>
 
-        <div class="nav">
-            <a href="/users">Users</a> |
-            <a href="/products">Products</a> |
-            <a href="/auth/login">Logout</a>
-        </div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Status</th>
+            </tr>
+        </thead>
 
-        <table>
+        <tbody id="productTable">
 
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Product Name</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
+            @if($products->count() > 0)
 
-            <tbody>
-
-                @foreach($products as $index => $product)
+                @foreach($products as $product)
                     <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $product }}</td>
-                        <td class="price">₹{{ ($index + 1) * 1000 }}</td>
-                        <td><span class="status">Available</span></td>
+                        <td>{{ $product->id }}</td>
+                        <td>{{ $product->name }}</td>
+                        <td class="price">₹{{ $product->price }}</td>
+                        <td>
+                            <span class="status">{{ $product->status }}</span>
+                        </td>
                     </tr>
                 @endforeach
 
-            </tbody>
+            @else
+                <tr>
+                    <td colspan="4" class="no-data">No Products Found</td>
+                </tr>
+            @endif
 
-        </table>
+        </tbody>
+    </table>
 
-        <div class="footer">
-            Laravel 12 Modular Product Management
-        </div>
+</div>
 
-    </div>
+<!-- AJAX LIVE SEARCH -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    $('#search').on('keyup', function () {
+
+        let query = $(this).val();
+
+        $.ajax({
+            url: "/products/search",
+            type: "GET",
+            data: { query: query },
+            success: function (data) {
+
+                let rows = "";
+
+                if (data.length > 0) {
+
+                    data.forEach(function (product) {
+                        rows += `
+                            <tr>
+                                <td>${product.id}</td>
+                                <td>${product.name}</td>
+                                <td class="price">₹${product.price}</td>
+                                <td><span class="status">${product.status ?? 'Available'}</span></td>
+                            </tr>
+                        `;
+                    });
+
+                } else {
+                    rows = `
+                        <tr>
+                            <td colspan="4" class="no-data">No Products Found</td>
+                        </tr>
+                    `;
+                }
+
+                $('#productTable').html(rows);
+            }
+        });
+
+    });
+
+});
+</script>
 
 </body>
-
 </html>
