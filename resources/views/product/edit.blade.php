@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Add Product - Laravel Modular</title>
+    <title>Edit Product - Laravel Modular</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -68,6 +68,15 @@
             color: #11998e;
         }
 
+        .delete-btn {
+            background: #e74c3c;
+            margin-top: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
         .error {
             color: red;
             font-size: 12px;
@@ -81,7 +90,7 @@
 
 <div class="container">
 
-    <h2>Add Product</h2>
+    <h2>Edit Product</h2>
 
     @if($errors->any())
         <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 6px; margin-bottom: 20px;">
@@ -93,22 +102,30 @@
         </div>
     @endif
 
-    <form method="POST" action="/products">
+    <form method="POST" action="/products/{{ $product->id }}">
         @csrf
+        @method('PUT')
 
         <label>Product Name</label>
-        <input type="text" name="name" placeholder="Enter product name" value="{{ old('name') }}" required>
+        <input type="text" name="name" value="{{ old('name', $product->name) }}" required>
 
         <label>Price</label>
-        <input type="number" step="0.01" name="price" placeholder="Enter price" value="{{ old('price') }}" required>
+        <input type="number" step="0.01" name="price" value="{{ old('price', $product->price) }}" required>
 
         <label>Status</label>
         <select name="status">
-            <option value="Available" {{ old('status') == 'Available' ? 'selected' : '' }}>Available</option>
-            <option value="Out of Stock" {{ old('status') == 'Out of Stock' ? 'selected' : '' }}>Out of Stock</option>
+            <option value="Available" {{ (old('status', $product->status) == 'Available') ? 'selected' : '' }}>Available</option>
+            <option value="Out of Stock" {{ (old('status', $product->status) == 'Out of Stock') ? 'selected' : '' }}>Out of Stock</option>
         </select>
 
-        <button type="submit">Save Product</button>
+        <button type="submit">Update Product</button>
+    </form>
+
+    <form method="POST" action="/products/{{ $product->id }}" 
+          onsubmit="return confirm('Are you sure you want to delete this product permanently?');">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="delete-btn">Delete Product</button>
     </form>
 
     <a href="/products" class="back">← Back to Products</a>
