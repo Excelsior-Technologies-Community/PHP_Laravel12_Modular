@@ -7,20 +7,17 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    // Display list of products
     public function index()
     {
         $products = Product::all();
         return view('product.index', compact('products'));
     }
 
-    // Show create form
     public function create()
     {
         return view('product.create');
     }
 
-    // Store new product
     public function store(Request $request)
     {
         $request->validate([
@@ -38,14 +35,12 @@ class ProductController extends Controller
         return redirect('/products')->with('success', 'Product added successfully!');
     }
 
-    // Show edit form
     public function edit($id)
     {
         $product = Product::findOrFail($id);
         return view('product.edit', compact('product'));
     }
 
-    // Update product
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -64,7 +59,6 @@ class ProductController extends Controller
         return redirect('/products')->with('success', 'Product updated successfully!');
     }
 
-    // Delete product
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
@@ -73,14 +67,35 @@ class ProductController extends Controller
         return redirect('/products')->with('success', 'Product deleted successfully!');
     }
 
-    // Search products
     public function search(Request $request)
     {
-        $query = $request->get('query');
+        $searchTerm = $request->get('query');
+        $sort = $request->get('sort');
         
-        $products = Product::where('name', 'like', "%{$query}%")
-                          ->orWhere('price', 'like', "%{$query}%")
-                          ->get();
+        $query = Product::query();
+        
+        if (!empty($searchTerm)) {
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('price', 'like', "%{$searchTerm}%");
+            });
+        }
+        
+        if (!empty($sort)) {
+            if ($sort == 'newest') {
+                $query->latest();
+            } elseif ($sort == 'oldest') {
+                $query->oldest();
+            } elseif ($sort == 'price_asc') {
+                $query->orderBy('price', 'asc');
+            } elseif ($sort == 'price_desc') {
+                $query->orderBy('price', 'desc');
+            }
+        } else {
+            $query->latest();
+        }
+        
+        $products = $query->get();
         
         return response()->json($products);
     }

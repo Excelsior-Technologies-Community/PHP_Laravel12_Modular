@@ -82,13 +82,26 @@
             background: #e74c3c;
         }
 
-        .search-box input {
-            width: 100%;
-            padding: 10px;
+        .controls {
+            display: flex;
+            gap: 15px;
             margin-bottom: 20px;
+        }
+
+        .controls input {
+            flex: 1;
+            padding: 10px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 16px;
+        }
+
+        .controls select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            min-width: 200px;
         }
 
         .no-data {
@@ -152,8 +165,15 @@
         </div>
     @endif
 
-    <div class="search-box">
+    <div class="controls">
         <input type="text" id="search" placeholder="Search product by name or price...">
+        <select id="sort">
+            <option value="">Default Sorting</option>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+        </select>
     </div>
 
     <table>
@@ -205,13 +225,14 @@
 
 <script>
 $(document).ready(function () {
-    $('#search').on('keyup', function () {
-        let query = $(this).val();
+    function fetchProducts() {
+        let query = $('#search').val();
+        let sort = $('#sort').val();
         
         $.ajax({
             url: "/products/search",
             type: "GET",
-            data: { query: query },
+            data: { query: query, sort: sort },
             success: function (data) {
                 let rows = "";
                 
@@ -243,7 +264,10 @@ $(document).ready(function () {
                 $('#productTable').html(rows);
             }
         });
-    });
+    }
+
+    $('#search').on('keyup', fetchProducts);
+    $('#sort').on('change', fetchProducts);
 });
 </script>
 
